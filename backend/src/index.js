@@ -20,7 +20,7 @@ app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(cookieParser());
 
-// ✅ Dynamic CORS for local + Render
+//  Dynamic CORS for both local + Render
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -28,25 +28,27 @@ app.use(
   })
 );
 
-// API Routes
+//  API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// ✅ Static files (only for full-stack single deploy)
+//  Health check route (important to keep before wildcard)
+app.get("/", (req, res) => {
+  res.send(" Backend server is running successfully!");
+});
+
+//  Serve static files (for full-stack deployment)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  // This wildcard must come LAST
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
 
-// ✅ Health check route (optional but useful for Render)
-app.get("/", (req, res) => {
-  res.send("✅ Backend server is running successfully!");
-});
-
-// Start server
+//  Start the server
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port: ${PORT}`);
+  console.log(` Server running on port: ${PORT}`);
   connectDB();
 });
