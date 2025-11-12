@@ -8,9 +8,7 @@ const server = http.createServer(app);
 // ✅ Use environment variable for Render frontend URL
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.FRONTEND_URL || "http://localhost:5173"
-    ],
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -24,7 +22,7 @@ export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
 
-// ✅ Single "connection" handler
+// ✅ Handle socket connections
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
