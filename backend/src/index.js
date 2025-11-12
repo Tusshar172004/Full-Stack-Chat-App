@@ -8,34 +8,45 @@ import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { app, server } from "./lib/socket.js";
 
+// Load environment variables
 dotenv.config();
 
-const PORT = process.env.PORT;  // Added fallback port
+// Setup
+const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
+// Middleware
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(cookieParser());
+
+// ✅ Dynamic CORS for local + Render
 app.use(
-    cors({
-        origin: "http://localhost:5173",  // Made configurable
-        credentials: true,
-    })
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  })
 );
 
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Static files for production
+// ✅ Static files (only for full-stack single deploy)
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
-    app.get("/:wildcard", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));  // Fixed path
-    });
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
 }
 
+// ✅ Health check route (optional but useful for Render)
+app.get("/", (req, res) => {
+  res.send("✅ Backend server is running successfully!");
+});
+
+// Start server
 server.listen(PORT, () => {
-    console.log(`Server is running on Port: ${PORT}`);  // Better logging
-    connectDB();
+  console.log(`🚀 Server running on port: ${PORT}`);
+  connectDB();
 });
